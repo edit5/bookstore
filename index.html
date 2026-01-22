@@ -1,140 +1,150 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>도서 다중 서점 검색</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>도서 통합 검색</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      font-size: 13px;
+      background: #fff;
+      color: #000;
+      margin: 20px;
+    }
 
-<style>
-body {
-  font-family: "Noto Sans KR", sans-serif;
-  background: #f6f6f6;
-  padding: 24px;
-}
+    h1 {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
 
-h1 {
-  font-size: 1.4rem;
-  margin-bottom: 16px;
-}
+    input[type="text"] {
+      width: 100%;
+      padding: 6px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
 
-.section {
-  background: #fff;
-  padding: 16px;
-  border: 1px solid #ddd;
-  margin-bottom: 16px;
-}
+    .group {
+      margin-bottom: 16px;
+    }
 
-.label {
-  font-size: 0.85rem;
-  color: #555;
-  margin-bottom: 6px;
-}
+    .checkboxes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
 
-.input-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
+    button {
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #aaa;
+      background: #f9f9f9;
+    }
 
-input[type="text"] {
-  flex: 1;
-  padding: 10px;
-  font-size: 1rem;
-}
-
-button {
-  padding: 10px 16px;
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-
-.checkbox-group {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
-}
-</style>
+    label {
+      font-size: 13px;
+    }
+  </style>
 </head>
-
 <body>
 
-<h1>📚 도서 다중 서점 검색</h1>
+<h1>📚 도서 통합 검색</h1>
 
-<!-- 검색 사이트 선택 -->
-<div class="section">
-  <div class="label">검색할 사이트 선택</div>
-  <div class="checkbox-group">
+<input id="searchInput" type="text" placeholder="책 제목 또는 ISBN 입력" />
+
+<!-- 서점 선택 -->
+<div class="group">
+  <div class="checkboxes">
+  <button onclick="searchBookstores()">서점 검색</button>
     <label><input type="checkbox" class="site" value="aladin" checked> 알라딘</label>
     <label><input type="checkbox" class="site" value="kyobo" checked> 교보문고</label>
     <label><input type="checkbox" class="site" value="yes24" checked> 예스24</label>
+    <label><input type="checkbox" class="site" value="booktown" checked> 동네서점</label>
   </div>
 </div>
 
-<!-- ISBN 검색 -->
-<div class="section">
-  <div class="label">ISBN으로 검색</div>
-  <div class="input-row">
-    <input id="isbn" type="text" placeholder="ISBN 입력">
-    <button onclick="searchByISBN()">ISBN 검색</button>
-  </div>
-</div>
-
-<!-- 제목 검색 -->
-<div class="section">
-  <div class="label">책 제목으로 검색</div>
-  <div class="input-row">
-    <input id="title" type="text" placeholder="책 제목 입력">
-    <button onclick="searchByTitle()">제목 검색</button>
+<!-- 미디어 선택 -->
+<div class="group">
+  <div class="checkboxes">
+  <button onclick="searchMedia()">미디어 검색</button>
+    <label><input type="checkbox" class="media" value="naver" checked> 네이버 블로그</label>
+    <label><input type="checkbox" class="media" value="news" checked> 뉴스</label>
+    <label><input type="checkbox" class="media" value="youtube" checked> 유튜브</label>
+    <label><input type="checkbox" class="media" value="instagram" checked> 인스타그램</label>
   </div>
 </div>
 
 <script>
-function getSelectedSites() {
-  return Array.from(document.querySelectorAll(".site:checked"))
-    .map(cb => cb.value);
-}
+  document.getElementById("searchInput").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      searchBookstores();
+    }
+  });
 
-function searchByISBN() {
-  const isbn = document.getElementById("isbn").value.trim();
-  if (!isbn) {
-    alert("ISBN을 입력해 주세요.");
-    return;
-  }
-  openSites(isbn);
-}
-
-function searchByTitle() {
-  const title = document.getElementById("title").value.trim();
-  if (!title) {
-    alert("책 제목을 입력해 주세요.");
-    return;
-  }
-  openSites(title);
-}
-
-function openSites(keyword) {
-  const sites = getSelectedSites();
-  if (sites.length === 0) {
-    alert("검색할 사이트를 하나 이상 선택해 주세요.");
-    return;
+  function getKeyword() {
+    const val = document.getElementById("searchInput").value.trim();
+    if (!val) {
+      alert("책 제목 또는 ISBN을 입력해 주세요.");
+      return null;
+    }
+    return val;
   }
 
-  const encoded = encodeURIComponent(keyword);
+  function searchBookstores() {
+    const keyword = getKeyword();
+    if (!keyword) return;
 
-  sites.forEach(site => {
-    let url = "";
-
-    if (site === "aladin") {
-      url = `https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=Book&SearchWord=${encoded}`;
-    } else if (site === "kyobo") {
-      url = `https://search.kyobobook.co.kr/search?keyword=${encoded}`;
-    } else if (site === "yes24") {
-      url = `https://www.yes24.com/Product/Search?query=${encoded}`;
+    const encoded = encodeURIComponent(keyword);
+    const sites = Array.from(document.querySelectorAll(".site:checked")).map(cb => cb.value);
+    if (sites.length === 0) {
+      alert("서점을 선택해 주세요.");
+      return;
     }
 
-    window.open(url, "_blank");
-  });
-}
+    sites.forEach(site => {
+      let url = "";
+      if (site === "aladin") {
+        url = `https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=Book&SearchWord=${encoded}`;
+      } else if (site === "kyobo") {
+        url = `https://search.kyobobook.co.kr/search?keyword=${encoded}`;
+      } else if (site === "yes24") {
+        url = `https://www.yes24.com/Product/Search?query=${encoded}`;
+      } else if (site === "booktown") {
+        url = `https://app.booktown.or.kr/home/search/all?searchKeyword=${encoded}`;
+      }
+      window.open(url, "_blank");
+    });
+  }
+
+  function searchMedia() {
+    const keyword = getKeyword();
+    if (!keyword) return;
+
+    const encoded = encodeURIComponent(keyword);
+    const hashtag = encodeURIComponent(keyword.replace(/\s/g, ""));
+    const medias = Array.from(document.querySelectorAll(".media:checked")).map(cb => cb.value);
+    if (medias.length === 0) {
+      alert("미디어를 선택해 주세요.");
+      return;
+    }
+
+    medias.forEach(media => {
+      let url = "";
+      if (media === "naver") {
+        url = `https://search.naver.com/search.naver?where=blog&query=${encoded}`;
+      } else if (media === "news") {
+        url = `https://www.google.com/search?tbm=nws&q=${encoded}`;
+      } else if (media === "youtube") {
+        url = `https://www.youtube.com/results?search_query=${encoded}+책`;
+      } else if (media === "instagram") {
+        url = `https://www.instagram.com/explore/tags/${hashtag}/`;
+      }
+      window.open(url, "_blank");
+    });
+  }
 </script>
 
 </body>
