@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>국내 도서검색</title>
+  <title>도서 통합 검색</title>
   <style>
     body {
       font-family: sans-serif;
@@ -16,11 +16,6 @@
     h1 {
       font-size: 16px;
       margin-bottom: 16px;
-    }
-
-    h2 {
-      font-size: 14px;
-      margin: 22px 0 10px;
     }
 
     input[type="text"] {
@@ -39,7 +34,6 @@
       flex-wrap: wrap;
       gap: 12px;
       margin-bottom: 8px;
-      align-items: center;
     }
 
     button {
@@ -53,53 +47,18 @@
     label {
       font-size: 13px;
     }
-
-    hr {
-      border: none;
-      border-top: 1px solid #000;
-      margin: 24px 0 12px;
-    }
-
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .footer-links a {
-      display: inline-block;
-      padding: 6px 10px;
-      border: 1px solid #aaa;
-      background: #f9f9f9;
-      color: #000;
-      text-decoration: none;
-      font-size: 13px;
-    }
-
-    .footer-links a:hover {
-      background: #eee;
-    }
-
-    .footer-title {
-      width: 100%;
-      font-size: 12px;
-      color: #333;
-      margin: 6px 0 2px;
-    }
   </style>
 </head>
 <body>
-<h6>VER 3.2 / 20260303
 
-<h1>국내 도서검색</h1>
+<h1>도서검색</h1>
 
 <input id="searchInput" type="text" placeholder="책 제목 또는 ISBN 입력" />
 
-<!-- 국내 서점 선택 -->
+<!-- 서점 선택 -->
 <div class="group">
   <div class="checkboxes">
-    <button onclick="searchBookstores()">서점 검색</button>
+  <button onclick="searchBookstores()">서점 검색</button>
     <label><input type="checkbox" class="site" value="aladin" checked> 알라딘</label>
     <label><input type="checkbox" class="site" value="kyobo" checked> 교보문고</label>
     <label><input type="checkbox" class="site" value="yes24" checked> 예스24</label>
@@ -107,10 +66,10 @@
   </div>
 </div>
 
-<!-- 국내 미디어 선택 -->
+<!-- 미디어 선택 -->
 <div class="group">
   <div class="checkboxes">
-    <button onclick="searchMedia()">미디어 검색</button>
+  <button onclick="searchMedia()">미디어 검색</button>
     <label><input type="checkbox" class="media" value="naver" checked> 네이버 블로그</label>
     <label><input type="checkbox" class="media" value="news" checked> 뉴스</label>
     <label><input type="checkbox" class="media" value="youtube" checked> 유튜브</label>
@@ -118,111 +77,10 @@
   </div>
 </div>
 
-<!-- ===== 하단 링크 버튼 ===== -->
-<hr>
-
-<div class="footer-title">이슈 링크</div>
-<div class="footer-links">
-  <a href="https://www.issuelink.co.kr/community/listview/all/3/adj/_self/blank/blank/blank" target="_blank" rel="noopener">커뮤니티 베스트</a>
-  <a href="https://www.issuelink.co.kr/video/listview" target="_blank" rel="noopener">영상 베스트</a>
-  <a href="https://www.issuelink.co.kr/news/korea" target="_blank" rel="noopener">뉴스 베스트</a>
-</div>
-
-<hr>
-
-<div class="footer-title">AAGAG & noxinfluencer</div>
-<div class="footer-links">
-  <a href="https://aagag.com/issue/" target="_blank" rel="noopener">AAGAG</a>
-  <a href="https://kr.noxinfluencer.com/" target="_blank" rel="noopener">noxinfluencer</a>
-</div>
-
-<hr>
-
-<div class="footer-title">Naver DataLab</div>
-<div class="footer-links">
-  <a href="https://datalab.naver.com/keyword/trendSearch.naver" target="_blank" rel="noopener">네이버 검색어 트렌드</a>
-  <a href="https://datalab.naver.com/shoppingInsight/sCategory.naver" target="_blank" rel="noopener">네이버 쇼핑인사이트</a>
-</div>
-
-<!-- ===================== 원서검색 섹션 ===================== -->
-<hr>
-<hr>
-<h2>원서검색</h2>
-
-<input id="foreignSearchInput" type="text" placeholder="원서 제목 또는 ISBN 입력" />
-
-<!-- 원서: 서점 검색 -->
-<div class="group">
-  <div class="checkboxes">
-    <button onclick="searchForeignBookstores()">서점 검색</button>
-    <label><input type="checkbox" class="foreign-site" value="amazon" checked> 아마존</label>
-    <label><input type="checkbox" class="foreign-site" value="barnes" checked> 반스앤노블</label>
-    <label><input type="checkbox" class="foreign-site" value="amazonjp" checked> 일본 아마존</label>
-  </div>
-</div>
-
-<!-- 원서: 서평 검색 -->
-<div class="group">
-  <div class="checkboxes">
-    <button onclick="searchForeignReviews()">서평 검색</button>
-    <label><input type="checkbox" class="foreign-review" value="goodreads" checked> goodreads</label>
-  </div>
-</div>
-
-<hr>
-
-<!-- 원서: 미디어 검색 -->
-<div class="group">
-  <div class="checkboxes">
-    <button onclick="searchForeignMedia()">미디어 검색</button>
-    <label><input type="checkbox" class="foreign-media" value="blog" checked> blog</label>
-    <label><input type="checkbox" class="foreign-media" value="news" checked> news</label>
-    <label><input type="checkbox" class="foreign-media" value="youtube" checked> youtube</label>
-    <label><input type="checkbox" class="foreign-media" value="instagram" checked> instagram</label>
-    <label><input type="checkbox" class="foreign-media" value="facebook" checked> facebook</label>
-  </div>
-</div>
-
-<!-- ✅ 추가: Reddit 검색 -->
-<hr>
-<div class="group">
-  <h2 style="margin: 0 0 10px;">Reddit 검색</h2>
-  <input id="redditSearchInput" type="text" placeholder="레딧에서 찾을 키워드 입력" />
-
-  <div class="checkboxes">
-    <button onclick="searchReddit()">reddit 검색</button>
-    <label><input type="checkbox" class="reddit" value="all" checked> 전체(reddit)</label>
-    <label><input type="checkbox" class="reddit" value="books" checked> r/books</label>
-    <label><input type="checkbox" class="reddit" value="bookreviews" checked> r/bookreviews</label>
-    <label><input type="checkbox" class="reddit" value="literature" checked> r/literature</label>
-    <label><input type="checkbox" class="reddit" value="suggestmeabook" checked> r/suggestmeabook</label>
-    <label><input type="checkbox" class="reddit" value="printSF"> r/printSF</label>
-    <label><input type="checkbox" class="reddit" value="fantasy"> r/Fantasy</label>
-    <label><input type="checkbox" class="reddit" value="nonfiction"> r/nonfiction</label>
-    <label><input type="checkbox" class="reddit" value="audiobooks"> r/audiobooks</label>
-  </div>
-</div>
-<!-- ========================================================= -->
-
 <script>
-  // 국내: Enter → 서점검색
   document.getElementById("searchInput").addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
       searchBookstores();
-    }
-  });
-
-  // 원서: Enter → 원서 서점검색
-  document.getElementById("foreignSearchInput").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      searchForeignBookstores();
-    }
-  });
-
-  // 레딧: Enter → 레딧검색
-  document.getElementById("redditSearchInput").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      searchReddit();
     }
   });
 
@@ -235,25 +93,6 @@
     return val;
   }
 
-  function getForeignKeyword() {
-    const val = document.getElementById("foreignSearchInput").value.trim();
-    if (!val) {
-      alert("원서 제목 또는 ISBN을 입력해 주세요.");
-      return null;
-    }
-    return val;
-  }
-
-  function getRedditKeyword() {
-    const val = document.getElementById("redditSearchInput").value.trim();
-    if (!val) {
-      alert("레딧 검색 키워드를 입력해 주세요.");
-      return null;
-    }
-    return val;
-  }
-
-  // 국내 서점 검색
   function searchBookstores() {
     const keyword = getKeyword();
     if (!keyword) return;
@@ -280,7 +119,6 @@
     });
   }
 
-  // 국내 미디어 검색
   function searchMedia() {
     const keyword = getKeyword();
     if (!keyword) return;
@@ -304,105 +142,6 @@
       } else if (media === "instagram") {
         url = `https://www.instagram.com/explore/tags/${hashtag}/`;
       }
-      window.open(url, "_blank");
-    });
-  }
-
-  // 원서 서점 검색
-  function searchForeignBookstores() {
-    const keyword = getForeignKeyword();
-    if (!keyword) return;
-
-    const encoded = encodeURIComponent(keyword);
-    const sites = Array.from(document.querySelectorAll(".foreign-site:checked")).map(cb => cb.value);
-    if (sites.length === 0) {
-      alert("원서 서점을 선택해 주세요.");
-      return;
-    }
-
-    sites.forEach(site => {
-      let url = "";
-      if (site === "amazon") {
-        url = `https://www.amazon.com/s?k=${encoded}`;
-      } else if (site === "barnes") {
-        url = `https://www.barnesandnoble.com/s/${encoded}`;
-      } else if (site === "amazonjp") {
-        url = `https://www.amazon.co.jp/s?k=${encoded}`;
-      }
-      window.open(url, "_blank");
-    });
-  }
-
-  // 원서 서평 검색
-  function searchForeignReviews() {
-    const keyword = getForeignKeyword();
-    if (!keyword) return;
-
-    const encoded = encodeURIComponent(keyword);
-    const targets = Array.from(document.querySelectorAll(".foreign-review:checked")).map(cb => cb.value);
-    if (targets.length === 0) {
-      alert("서평 사이트를 선택해 주세요.");
-      return;
-    }
-
-    targets.forEach(t => {
-      let url = "";
-      if (t === "goodreads") {
-        url = `https://www.goodreads.com/search?q=${encoded}`;
-      }
-      window.open(url, "_blank");
-    });
-  }
-
-  // 원서 미디어 검색
-  function searchForeignMedia() {
-    const keyword = getForeignKeyword();
-    if (!keyword) return;
-
-    const encoded = encodeURIComponent(keyword);
-    const medias = Array.from(document.querySelectorAll(".foreign-media:checked")).map(cb => cb.value);
-    if (medias.length === 0) {
-      alert("미디어를 선택해 주세요.");
-      return;
-    }
-
-    medias.forEach(m => {
-      let url = "";
-      if (m === "blog") {
-        url = `https://www.google.com/search?q=${encoded}+review+blog`;
-      } else if (m === "news") {
-        url = `https://www.google.com/search?tbm=nws&q=${encoded}`;
-      } else if (m === "youtube") {
-        url = `https://www.youtube.com/results?search_query=${encoded}`;
-      } else if (m === "instagram") {
-        url = `https://www.google.com/search?q=${encoded}+site:instagram.com`;
-      } else if (m === "facebook") {
-        url = `https://www.google.com/search?q=${encoded}+site:facebook.com`;
-      }
-      window.open(url, "_blank");
-    });
-  }
-
-  // ✅ Reddit 검색 (체크된 서브레딧별로 새 탭 오픈)
-  function searchReddit() {
-    const keyword = getRedditKeyword();
-    if (!keyword) return;
-
-    const encoded = encodeURIComponent(keyword);
-    const subs = Array.from(document.querySelectorAll(".reddit:checked")).map(cb => cb.value);
-    if (subs.length === 0) {
-      alert("레딧 범위를 선택해 주세요.");
-      return;
-    }
-
-    subs.forEach(sub => {
-      let query = "";
-      if (sub === "all") {
-        query = `${keyword} site:reddit.com`;
-      } else {
-        query = `${keyword} site:reddit.com/r/${sub}`;
-      }
-      const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
       window.open(url, "_blank");
     });
   }
