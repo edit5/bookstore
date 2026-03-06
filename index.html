@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>도서 통합 검색</title>
+  <title>국내 도서검색</title>
   <style>
     body {
       font-family: sans-serif;
@@ -13,27 +13,33 @@
       margin: 20px;
     }
 
-    h1 {
-      font-size: 16px;
-      margin-bottom: 16px;
+    h1 { font-size: 16px; margin-bottom: 16px; }
+    h2 { font-size: 14px; margin: 22px 0 10px; }
+
+    h6 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
     }
 
     input[type="text"] {
       width: 100%;
+  	  max-width: 600px;
       padding: 6px;
       font-size: 13px;
       margin-bottom: 12px;
+      box-sizing: border-box;
     }
 
-    .group {
-      margin-bottom: 16px;
-    }
+    .group { margin-bottom: 16px; }
 
     .checkboxes {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       margin-bottom: 8px;
+      align-items: center;
     }
 
     button {
@@ -43,109 +49,898 @@
       border: 1px solid #aaa;
       background: #f9f9f9;
     }
+    button:hover { background: #eee; }
 
-    label {
+    label { font-size: 13px; }
+
+    hr {
+      border: none;
+      border-top: 1px solid #000;
+      margin: 24px 0 12px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .footer-links a {
+      display: inline-block;
+      padding: 6px 10px;
+      border: 1px solid #aaa;
+      background: #f9f9f9;
+      color: #000;
+      text-decoration: none;
       font-size: 13px;
     }
+    .footer-links a:hover { background: #eee; }
+
+    .footer-title {
+      width: 100%;
+      font-size: 12px;
+      color: #333;
+      margin: 6px 0 2px;
+    }
+
+    /* 미디어 */
+    .media-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    /* 커뮤니티: 토글 */
+    .toggle-btn {
+      padding: 7px 12px;
+      border: 1px solid #aaa;
+      border-radius: 999px;
+      background: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+      font-size: 13px;
+    }
+    .toggle-btn:hover { background: #f2f2f2; }
+    .toggle-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      border: 2px solid #666;
+      background: #fff;
+      flex: 0 0 auto;
+    }
+    .toggle-btn[data-on="true"] .toggle-indicator {
+      background: #111;
+      border-color: #111;
+    }
+    .toggle-btn[data-on="true"] {
+      border-color: #666;
+      background: #f6f6f6;
+    }
+
+    /* 커뮤니티 맵 + 노드 */
+    .community-wrap { 
+	  width: 100%;
+	  max-width: 900px;
+	}
+
+    .community-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .community-map {
+      position: relative;
+      width: 100%;
+      height: 420px;
+      border: 1px solid #000;
+      background: #fff;
+      overflow: hidden;
+      border-radius: 10px;
+      box-sizing: border-box;
+      touch-action: pan-y;
+    }
+
+    @media (max-width: 520px) {
+      .community-map { height: 560px; }
+    }
+
+    .community-map .axis-y {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(0,0,0,.35);
+    }
+
+    /* x축 60% */
+    .community-map .axis-x {
+      position: absolute;
+      top: 60%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(0,0,0,.35);
+    }
+
+    .community-map .axis-label {
+      position: absolute;
+      font-size: 12px;
+      color: #000;
+      background: rgba(255,255,255,.90);
+      padding: 2px 6px;
+      border: 1px solid rgba(0,0,0,.25);
+      border-radius: 999px;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .community-map .label-left { left: 8px; top: 60%; transform: translateY(-50%); }
+    .community-map .label-right { right: 8px; top: 60%; transform: translateY(-50%); }
+    .community-map .label-top { top: 8px; left: 50%; transform: translateX(-50%); }
+    .community-map .label-bottom { bottom: 8px; left: 50%; transform: translateX(-50%); }
+
+    .community-node {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      transform: translate(-50%, -50%);
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+
+      padding: 7px 10px;
+      border: 1px solid rgba(0,0,0,.25);
+      border-radius: 12px;
+
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 1px 0 rgba(0,0,0,.06);
+      user-select: none;
+      font-size: 12px;
+      max-width: 56vw;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    /* 인원수 농도(0~0.5) 오버레이 */
+    .community-node { --shade: 0; }
+    .community-node::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: rgba(0,0,0,var(--shade));
+      pointer-events: none;
+      z-index: 0;
+    }
+    .community-node > * { position: relative; z-index: 1; }
+
+    .community-node:hover { border-color: rgba(0,0,0,.45); }
+
+    .community-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .community-meta {
+      font-size: 70%;
+      color: #555;
+      line-height: 1.25;
+    }
+    .community-meta .meta-line:empty { display: none; }
+
+/* 체크박스 공통 */
+input.community {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #888;
+  border-radius: 3px;
+  background: #fff;
+  display: inline-block;
+  position: relative;
+  flex: 0 0 auto;
+  cursor: pointer;
+}
+
+/* 성향별 테두리 색 */
+input.community.prog   { border-color: #2f6bff; }
+input.community.center { border-color: #8e44ad; }
+input.community.cons   { border-color: #e53935; }
+
+/* ✅ 체크되면 내부를 성향색으로 채움 */
+input.community.prog:checked   { background: #2f6bff; }
+input.community.center:checked { background: #8e44ad; }
+input.community.cons:checked   { background: #e53935; }
+
+/* ✅ 체크표시를 흰색으로 */
+input.community:checked::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;                 /* 검정 -> 흰색 */
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
   </style>
 </head>
+
 <body>
+  <h6>VER 4.3 / 20260303</h6>
+  <h1>국내 도서검색</h1>
 
-<h1>도서검색</h1>
+  <input id="searchInput" type="text" placeholder="책 제목, ISBN, 키워드 입력" />
 
-<input id="searchInput" type="text" placeholder="책 제목 또는 ISBN 입력" />
-
-<!-- 서점 선택 -->
-<div class="group">
-  <div class="checkboxes">
-  <button onclick="searchBookstores()">서점 검색</button>
-    <label><input type="checkbox" class="site" value="aladin" checked> 알라딘</label>
-    <label><input type="checkbox" class="site" value="kyobo" checked> 교보문고</label>
-    <label><input type="checkbox" class="site" value="yes24" checked> 예스24</label>
-    <label><input type="checkbox" class="site" value="booktown" checked> 동네서점</label>
+  <!-- 국내 서점 선택 -->
+  <div class="group">
+    <div class="checkboxes">
+      <button onclick="searchBookstores()">서점 검색</button>
+      <label><input type="checkbox" class="site" value="aladin" checked> 알라딘</label>
+      <label><input type="checkbox" class="site" value="kyobo" checked> 교보문고</label>
+      <label><input type="checkbox" class="site" value="yes24" checked> 예스24</label>
+      <label><input type="checkbox" class="site" value="booktown" checked> 동네서점</label>
+    </div>
   </div>
-</div>
 
-<!-- 미디어 선택 -->
-<div class="group">
-  <div class="checkboxes">
-  <button onclick="searchMedia()">미디어 검색</button>
-    <label><input type="checkbox" class="media" value="naver" checked> 네이버 블로그</label>
-    <label><input type="checkbox" class="media" value="news" checked> 뉴스</label>
-    <label><input type="checkbox" class="media" value="youtube" checked> 유튜브</label>
-    <label><input type="checkbox" class="media" value="instagram" checked> 인스타그램</label>
+  <!-- 미디어 검색 -->
+  <div class="group">
+    <div class="media-row">
+      <button onclick="searchMedia()">미디어 검색</button>
+
+      <button type="button" id="toggleMediaBtn" class="toggle-btn" data-on="true" onclick="toggleAllMedia()">
+        <span class="toggle-indicator"></span>
+        <span id="toggleMediaText">미디어 전체: 체크</span>
+      </button>
+
+      <label><input type="checkbox" class="media" value="naver_blog" checked> 네이버 블로그</label>
+      <label><input type="checkbox" class="media" value="naver_cafe" checked> 네이버 카페</label>
+      <label><input type="checkbox" class="media" value="youtube" checked> 유튜브</label>
+      <label><input type="checkbox" class="media" value="instagram" checked> 인스타그램</label>
+      <label><input type="checkbox" class="media" value="facebook" checked> 페이스북</label>
+    </div>
   </div>
-</div>
 
-<script>
-  document.getElementById("searchInput").addEventListener("keydown", function (e) {
-    if (e.key === "Enter") {
-      searchBookstores();
-    }
-  });
+  <!-- 커뮤니티 검색 -->
+  <div class="group community-wrap">
+    <div class="community-header">
+      <button onclick="searchCommunity()">커뮤니티 검색</button>
 
-  function getKeyword() {
-    const val = document.getElementById("searchInput").value.trim();
-    if (!val) {
-      alert("책 제목 또는 ISBN을 입력해 주세요.");
-      return null;
-    }
-    return val;
-  }
+      <button type="button" id="toggleCommunityCheckBtn" class="toggle-btn" data-on="false" onclick="toggleAllCommunities()">
+        <span class="toggle-indicator"></span>
+        <span id="toggleCommunityCheckText">커뮤니티 전체: 해제</span>
+      </button>
+    </div>
 
-  function searchBookstores() {
-    const keyword = getKeyword();
-    if (!keyword) return;
+    <div id="communityMap" class="community-map edit-off">
+      <div class="axis-x"></div>
+      <div class="axis-y"></div>
 
-    const encoded = encodeURIComponent(keyword);
-    const sites = Array.from(document.querySelectorAll(".site:checked")).map(cb => cb.value);
-    if (sites.length === 0) {
-      alert("서점을 선택해 주세요.");
-      return;
-    }
+      <div class="axis-label label-left">진보</div>
+      <div class="axis-label label-right">보수</div>
+      <div class="axis-label label-top">남성</div>
+      <div class="axis-label label-bottom">여성</div>
 
-    sites.forEach(site => {
-      let url = "";
-      if (site === "aladin") {
-        url = `https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=Book&SearchWord=${encoded}`;
-      } else if (site === "kyobo") {
-        url = `https://search.kyobobook.co.kr/search?keyword=${encoded}`;
-      } else if (site === "yes24") {
-        url = `https://www.yes24.com/Product/Search?query=${encoded}`;
-      } else if (site === "booktown") {
-        url = `https://app.booktown.or.kr/home/search/all?searchKeyword=${encoded}`;
-      }
-      window.open(url, "_blank");
+      <!-- 상단(좌) -->
+      <label class="community-node" data-key="ruliweb" data-members="1740000" style="--x: 12%; --y: 9%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="ruliweb"> 루리웹</div>
+        <div class="community-meta">
+          <div class="meta-line">174만(4위)</div>
+          <div class="meta-line">30대남성(8:2)/게임</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="etoland" data-members="580000" style="--x: 23%; --y: 9%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="etoland"> 이토랜드</div>
+        <div class="community-meta">
+          <div class="meta-line">58만(14위)</div>
+          <div class="meta-line">40대남성/토론</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="gasengi" data-members="260000" style="--x: 34.7%; --y: 9%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="gasengi"> 가생이닷컴</div>
+        <div class="community-meta">
+          <div class="meta-line">26만(20위)</div>
+          <div class="meta-line">40대남성(7:3)/한류</div>
+        </div>
+      </label>
+
+      <!-- 상단(중앙) -->
+      <label class="community-node" data-key="inven" data-members="2090000" style="--x: 50%; --y: 16%;">
+        <div class="community-title"><input type="checkbox" class="community center" value="inven"> 인벤</div>
+        <div class="community-meta">
+          <div class="meta-line">209만(3위)</div>
+          <div class="meta-line">30대남성(8:2)/게임</div>
+        </div>
+      </label>
+
+      <!-- 상단(우) -->
+      <label class="community-node" data-key="fmkorea" data-members="3100000" style="--x: 78%; --y: 20%;">
+        <div class="community-title"><input type="checkbox" class="community cons" value="fmkorea"> FM코리아</div>
+        <div class="community-meta">
+          <div class="meta-line">310만(2위)</div>
+          <div class="meta-line">20~30대남성(8:2)/유머</div>
+        </div>
+      </label>
+
+      <!-- 2열(좌) -->
+      <label class="community-node" data-key="ddanzi" data-members="350000" style="--x: 6.5%; --y: 26%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="ddanzi"> 딴지일보</div>
+        <div class="community-meta">
+          <div class="meta-line">35만(15위)</div>
+          <div class="meta-line">40대남성(7:3)</div>
+          <div class="meta-line">정치</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="ppomppu" data-members="1660000" style="--x: 16.5%; --y: 26%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="ppomppu"> 뽐뿌</div>
+        <div class="community-meta">
+          <div class="meta-line">166만(5위)</div>
+          <div class="meta-line">30대남성(7:3)</div>
+          <div class="meta-line">스마트폰</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="bobaedream" data-members="670000" style="--x: 26.5%; --y: 26%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="bobaedream"> 보배드림</div>
+        <div class="community-meta">
+          <div class="meta-line">67만(12위)</div>
+          <div class="meta-line">40대남성(8:2)</div>
+		  <div class="meta-line">중고차</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="slrclub" data-members="320000" style="--x: 37.6%; --y: 26%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="slrclub"> SLR클럽</div>
+        <div class="community-meta">
+          <div class="meta-line">32만(16위)</div>
+          <div class="meta-line">40대남성(8:2)</div>
+          <div class="meta-line">사진</div>
+        </div>
+      </label>
+
+      <!-- 2열(중앙) -->
+      <label class="community-node" data-key="mlbpark" data-members="640000" style="--x: 50%; --y: 31.5%;">
+        <div class="community-title"><input type="checkbox" class="community center" value="mlbpark"> MLB파크</div>
+        <div class="community-meta">
+          <div class="meta-line">64만(13위)</div>
+          <div class="meta-line">40대남성(7:3)/야구</div>
+        </div>
+      </label>
+
+      <!-- 2열(우) -->
+      <label class="community-node" data-key="dcinside" data-members="6450000" style="--x: 73%; --y: 36%;">
+        <div class="community-title"><input type="checkbox" class="community cons" value="dcinside"> 디시인사이드</div>
+        <div class="community-meta">
+          <div class="meta-line">645만(1위)</div>
+          <div class="meta-line">30대남성(7:3)/유머</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="ilbe" data-members="920000" style="--x: 86%; --y: 36%;">
+        <div class="community-title"><input type="checkbox" class="community cons" value="ilbe"> 일베</div>
+        <div class="community-meta">
+          <div class="meta-line">92만(7위)</div>
+          <div class="meta-line">20~30대남성(8:2)/유머</div>
+        </div>
+      </label>
+
+      <!-- 3열(좌) -->
+      <label class="community-node" data-key="todayhumor" data-members="280000" style="--x: 12%; --y: 43%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="todayhumor"> 오늘의유머</div>
+        <div class="community-meta">
+          <div class="meta-line">28만(19위)</div>
+          <div class="meta-line">40대남성(7:3)/유머</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="humoruniv" data-members="680000" style="--x: 24%; --y: 43%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="humoruniv"> 웃긴대학</div>
+        <div class="community-meta">
+          <div class="meta-line">68만(11위)</div>
+          <div class="meta-line">유머</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="clien" data-members="840000" style="--x: 35.7%; --y: 43%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="clien"> 클리앙</div>
+        <div class="community-meta">
+          <div class="meta-line">84만(8위)</div>
+          <div class="meta-line">40대남성(7:3)/IT·시사</div>
+        </div>
+      </label>
+
+      <!-- 중앙 하단(축 근처) -->
+      <label class="community-node" data-key="ygosu" data-members="300000" style="--x: 50%; --y: 47%;">
+        <div class="community-title"><input type="checkbox" class="community center" value="ygosu"> 와이고수</div>
+        <div class="community-meta">
+          <div class="meta-line">30만(18위)</div>
+          <div class="meta-line">30대남성(8:2)/게임</div>
+        </div>
+      </label>
+
+      <!-- 여성권(좌 하단) -->
+      <label class="community-node" data-key="theqoo" data-members="1430000" style="--x: 16%; --y: 72%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="theqoo"> 더쿠</div>
+        <div class="community-meta">
+          <div class="meta-line">143만(6위)</div>
+          <div class="meta-line">40대여성(3:7)</div>
+          <div class="meta-line">연예</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="instiz" data-members="680000" style="--x: 26%; --y: 72%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="instiz"> 인스티즈</div>
+        <div class="community-meta">
+          <div class="meta-line">68만(10위)</div>
+          <div class="meta-line">30대여성(4:6)</div>
+          <div class="meta-line">연예</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="natepann" data-members="690000" style="--x: 37%; --y: 77%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="natepann"> 네이트판</div>
+        <div class="community-meta">
+          <div class="meta-line">69만(9위)</div>
+          <div class="meta-line">20대여성(2:8)/연예</div>
+        </div>
+      </label>
+
+      <label class="community-node" data-key="82cook" data-members="310000" style="--x: 22%; --y: 89%;">
+        <div class="community-title"><input type="checkbox" class="community prog" value="82cook"> 82쿡</div>
+        <div class="community-meta">
+          <div class="meta-line">31만(17위)</div>
+          <div class="meta-line">50대여성(3:7)/요리</div>
+        </div>
+      </label>
+
+      <!-- 여성 하단(중앙) -->
+      <label class="community-node" data-key="womad" data-members="10000" style="--x: 47.5%; --y: 85%;">
+        <div class="community-title"><input type="checkbox" class="community center" value="womad"> 워마드</div>
+        <div class="community-meta">
+          <div class="meta-line">1만/30대여성(1:9)</div>
+          <div class="meta-line">페미니즘</div>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <!-- ===== 하단 링크 버튼 ===== -->
+  <div class="footer-title">이슈 링크 </div>
+  <div class="footer-links">
+    <a href="https://www.issuelink.co.kr/community/listview/all/3/adj/_self/blank/blank/blank" target="_blank" rel="noopener">커뮤니티 베스트</a>
+    <a href="https://www.issuelink.co.kr/video/listview" target="_blank" rel="noopener">영상 베스트</a>
+    <a href="https://www.issuelink.co.kr/news/korea" target="_blank" rel="noopener">뉴스 베스트</a>
+    <a href="https://aagag.com/issue/" target="_blank" rel="noopener">AAGAG</a>
+  </div>
+
+  <div class="footer-title">Naver DataLab</div>
+  <div class="footer-links">
+    <a href="https://datalab.naver.com/keyword/trendSearch.naver" target="_blank" rel="noopener">네이버 검색어 트렌드</a>
+    <a href="https://datalab.naver.com/shoppingInsight/sCategory.naver" target="_blank" rel="noopener">네이버 쇼핑인사이트</a>
+    <a href="https://kr.noxinfluencer.com/" target="_blank" rel="noopener">noxinfluencer</a>
+  </div>
+
+  <!-- ===================== 원서검색 섹션(기존 유지) ===================== -->
+  <hr>
+  <h2>원서검색</h2>
+
+  <input id="foreignSearchInput" type="text" placeholder="책 제목, ISBN, 키워드 입력" />
+
+  <div class="group">
+    <div class="checkboxes">
+      <button onclick="searchForeignBookstores()">서점 검색</button>
+      <label><input type="checkbox" class="foreign-site" value="amazon" checked> 아마존</label>
+      <label><input type="checkbox" class="foreign-site" value="barnes" checked> 반스앤노블</label>
+      <label><input type="checkbox" class="foreign-site" value="amazonjp" checked> 일본 아마존</label>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="checkboxes">
+      <button onclick="searchForeignReviews()">서평 검색</button>
+      <label><input type="checkbox" class="foreign-review" value="goodreads" checked> goodreads</label>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="checkboxes">
+      <button onclick="searchForeignMedia()">미디어 검색</button>
+      <label><input type="checkbox" class="foreign-media" value="blog" checked> blog</label>
+      <label><input type="checkbox" class="foreign-media" value="news" checked> news</label>
+      <label><input type="checkbox" class="foreign-media" value="youtube" checked> youtube</label>
+      <label><input type="checkbox" class="foreign-media" value="instagram" checked> instagram</label>
+      <label><input type="checkbox" class="foreign-media" value="facebook" checked> facebook</label>
+    </div>
+  </div>
+
+  <div class="group">
+    <h2 style="margin: 0 0 10px;">Reddit 검색</h2>
+    <input id="redditSearchInput" type="text" placeholder="레딧에서 찾을 키워드 입력" />
+    <div class="checkboxes">
+      <button onclick="searchReddit()">reddit 검색</button>
+      <label><input type="checkbox" class="reddit" value="all"> 전체(reddit)</label>
+      <label><input type="checkbox" class="reddit" value="books"> r/books</label>
+      <label><input type="checkbox" class="reddit" value="bookreviews"> r/bookreviews</label>
+      <label><input type="checkbox" class="reddit" value="literature"> r/literature</label>
+      <label><input type="checkbox" class="reddit" value="suggestmeabook"> r/suggestmeabook</label>
+      <label><input type="checkbox" class="reddit" value="printSF"> r/printSF</label>
+      <label><input type="checkbox" class="reddit" value="fantasy"> r/Fantasy</label>
+      <label><input type="checkbox" class="reddit" value="nonfiction"> r/nonfiction</label>
+      <label><input type="checkbox" class="reddit" value="audiobooks"> r/audiobooks</label>
+    </div>
+  </div>
+
+  <script>
+    // ===== Enter 동작 =====
+    document.getElementById("searchInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") searchBookstores();
     });
-  }
+    document.getElementById("foreignSearchInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") searchForeignBookstores();
+    });
+    document.getElementById("redditSearchInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") searchReddit();
+    });
 
-  function searchMedia() {
-    const keyword = getKeyword();
-    if (!keyword) return;
-
-    const encoded = encodeURIComponent(keyword);
-    const hashtag = encodeURIComponent(keyword.replace(/\s/g, ""));
-    const medias = Array.from(document.querySelectorAll(".media:checked")).map(cb => cb.value);
-    if (medias.length === 0) {
-      alert("미디어를 선택해 주세요.");
-      return;
+    // ===== 키워드 helpers =====
+    function getKeyword() {
+      const val = document.getElementById("searchInput").value.trim();
+      if (!val) { alert("책 제목 또는 ISBN을 입력해 주세요."); return null; }
+      return val;
+    }
+    function getForeignKeyword() {
+      const val = document.getElementById("foreignSearchInput").value.trim();
+      if (!val) { alert("원서 제목 또는 ISBN을 입력해 주세요."); return null; }
+      return val;
+    }
+    function getRedditKeyword() {
+      const val = document.getElementById("redditSearchInput").value.trim();
+      if (!val) { alert("레딧 검색 키워드를 입력해 주세요."); return null; }
+      return val;
     }
 
-    medias.forEach(media => {
-      let url = "";
-      if (media === "naver") {
-        url = `https://search.naver.com/search.naver?where=blog&query=${encoded}`;
-      } else if (media === "news") {
-        url = `https://www.google.com/search?tbm=nws&q=${encoded}`;
-      } else if (media === "youtube") {
-        url = `https://www.youtube.com/results?search_query=${encoded}+책`;
-      } else if (media === "instagram") {
-        url = `https://www.instagram.com/explore/tags/${hashtag}/`;
-      }
-      window.open(url, "_blank");
-    });
-  }
-</script>
+    // ===== 공용: Google site: 검색 =====
+    function openGoogleSiteSearch(keyword, domain) {
+      const q = `${keyword} site:${domain}`;
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, "_blank");
+    }
 
+    function setToggleButtonState(btnId, textId, on, onText, offText) {
+      const btn = document.getElementById(btnId);
+      const txt = document.getElementById(textId);
+      if (btn) btn.dataset.on = String(on);
+      if (txt) txt.textContent = on ? onText : offText;
+    }
+
+    // ===== 미디어 전체 토글 =====
+    function toggleAllMedia() {
+      const cbs = Array.from(document.querySelectorAll("input.media"));
+      if (cbs.length === 0) return;
+
+      const allChecked = cbs.every(cb => cb.checked);
+      const next = !allChecked;
+      cbs.forEach(cb => cb.checked = next);
+
+      setToggleButtonState(
+        "toggleMediaBtn",
+        "toggleMediaText",
+        next,
+        "미디어 전체: 체크",
+        "미디어 전체: 해제"
+      );
+    }
+
+    // ===== 커뮤니티 전체 토글 =====
+    function toggleAllCommunities() {
+      const cbs = Array.from(document.querySelectorAll("input.community"));
+      if (cbs.length === 0) return;
+
+      const allChecked = cbs.every(cb => cb.checked);
+      const next = !allChecked;
+
+      cbs.forEach(cb => cb.checked = next);
+
+      setToggleButtonState(
+        "toggleCommunityCheckBtn",
+        "toggleCommunityCheckText",
+        next,
+        "커뮤니티 전체: 체크",
+        "커뮤니티 전체: 해제"
+      );
+    }
+
+    // ===== 농도 적용 =====
+    function applyCommunityDensity() {
+      const nodes = Array.from(document.querySelectorAll(".community-node[data-members]"));
+      if (nodes.length === 0) return;
+
+      const members = nodes
+        .map(n => Number(n.getAttribute("data-members") || 0))
+        .filter(v => Number.isFinite(v));
+
+      const min = Math.min(...members);
+      const max = Math.max(...members);
+      const range = Math.max(1, max - min);
+
+      nodes.forEach(n => {
+        const v = Number(n.getAttribute("data-members") || 0);
+        const t = (v - min) / range;
+        const shade = (0.5 * t);
+        n.style.setProperty("--shade", shade.toFixed(4));
+      });
+    }
+
+    // ===== 검색 기능 =====
+    function searchBookstores() {
+      const keyword = getKeyword();
+      if (!keyword) return;
+
+      const encoded = encodeURIComponent(keyword);
+      const sites = Array.from(document.querySelectorAll(".site:checked")).map(cb => cb.value);
+      if (sites.length === 0) { alert("서점을 선택해 주세요."); return; }
+
+      sites.forEach(site => {
+        let url = "";
+        if (site === "aladin") url = `https://www.aladin.co.kr/search/wsearchresult.aspx?SearchTarget=Book&SearchWord=${encoded}`;
+        else if (site === "kyobo") url = `https://search.kyobobook.co.kr/search?keyword=${encoded}`;
+        else if (site === "yes24") url = `https://www.yes24.com/Product/Search?query=${encoded}`;
+        else if (site === "booktown") url = `https://app.booktown.or.kr/home/search/all?searchKeyword=${encoded}`;
+        if (url) window.open(url, "_blank");
+      });
+    }
+
+    function searchMedia() {
+      const keyword = getKeyword();
+      if (!keyword) return;
+
+      const encoded = encodeURIComponent(keyword);
+      const hashtag = encodeURIComponent(keyword.replace(/\s/g, ""));
+      const medias = Array.from(document.querySelectorAll(".media:checked")).map(cb => cb.value);
+      if (medias.length === 0) { alert("미디어를 선택해 주세요."); return; }
+
+      medias.forEach(media => {
+        let url = "";
+        if (media === "naver_blog") {
+          url = `https://search.naver.com/search.naver?where=blog&query=${encoded}`;
+        } else if (media === "naver_cafe") {
+          url = `https://search.naver.com/search.naver?where=article&query=${encoded}`;
+        } else if (media === "youtube") {
+          url = `https://www.youtube.com/results?search_query=${encoded}+책`;
+        } else if (media === "instagram") {
+          url = `https://www.instagram.com/explore/tags/${hashtag}/`;
+        } else if (media === "facebook") {
+          const q = `${keyword} site:facebook.com`;
+          url = `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+        }
+        if (url) window.open(url, "_blank");
+      });
+    }
+
+    function searchCommunity() {
+      const keyword = getKeyword();
+      if (!keyword) return;
+
+      const encoded = encodeURIComponent(keyword);
+      const checked = Array.from(document.querySelectorAll(".community:checked")).map(cb => cb.value);
+      if (checked.length === 0) { alert("커뮤니티를 선택해 주세요."); return; }
+
+      checked.forEach(site => {
+        let url = "";
+        switch (site) {
+          case "dcinside": url = `https://search.dcinside.com/combine/q/${encoded}`; break;
+          case "fmkorea": url = `https://www.fmkorea.com/search.php?mid=home&search_keyword=${encoded}`; break;
+          case "clien": url = `https://www.clien.net/service/search?q=${encoded}`; break;
+          case "ruliweb": url = `https://search.ruliweb.com/?q=${encoded}`; break;
+          case "theqoo": url = `https://theqoo.net/index.php?mid=search&search_target=title_content&search_keyword=${encoded}`; break;
+          case "natepann": url = `https://pann.nate.com/search/talk?q=${encoded}`; break;
+
+          case "ppomppu":     openGoogleSiteSearch(keyword, "ppomppu.co.kr"); return;
+          case "bobaedream":  openGoogleSiteSearch(keyword, "bobaedream.co.kr"); return;
+          case "slrclub":     openGoogleSiteSearch(keyword, "slrclub.com"); return;
+          case "etoland":     openGoogleSiteSearch(keyword, "etoland.co.kr"); return;
+          case "ddanzi":      openGoogleSiteSearch(keyword, "ddanzi.com"); return;
+          case "todayhumor":  openGoogleSiteSearch(keyword, "todayhumor.co.kr"); return;
+          case "humoruniv":   openGoogleSiteSearch(keyword, "humoruniv.com"); return;
+          case "mlbpark":     openGoogleSiteSearch(keyword, "mlbpark.donga.com"); return;
+          case "gasengi":     openGoogleSiteSearch(keyword, "gasengi.com"); return;
+
+          case "inven":       openGoogleSiteSearch(keyword, "inven.co.kr"); return;
+          case "ilbe":        openGoogleSiteSearch(keyword, "ilbe.com"); return;
+
+          case "82cook":      openGoogleSiteSearch(keyword, "82cook.com"); return;
+          case "instiz":      openGoogleSiteSearch(keyword, "instiz.net"); return;
+
+          case "ygosu":       openGoogleSiteSearch(keyword, "ygosu.com"); return;
+          case "womad":       openGoogleSiteSearch(keyword, "womad.life"); return;
+
+          default:
+            url = `https://www.google.com/search?q=${encodeURIComponent(keyword)}`;
+            break;
+        }
+        if (url) window.open(url, "_blank");
+      });
+    }
+
+    function searchForeignBookstores() {
+      const keyword = getForeignKeyword();
+      if (!keyword) return;
+
+      const encoded = encodeURIComponent(keyword);
+      const sites = Array.from(document.querySelectorAll(".foreign-site:checked")).map(cb => cb.value);
+      if (sites.length === 0) { alert("원서 서점을 선택해 주세요."); return; }
+
+      sites.forEach(site => {
+        let url = "";
+        if (site === "amazon") url = `https://www.amazon.com/s?k=${encoded}`;
+        else if (site === "barnes") url = `https://www.barnesandnoble.com/s/${encoded}`;
+        else if (site === "amazonjp") url = `https://www.amazon.co.jp/s?k=${encoded}`;
+        if (url) window.open(url, "_blank");
+      });
+    }
+
+    function searchForeignReviews() {
+      const keyword = getForeignKeyword();
+      if (!keyword) return;
+
+      const encoded = encodeURIComponent(keyword);
+      const targets = Array.from(document.querySelectorAll(".foreign-review:checked")).map(cb => cb.value);
+      if (targets.length === 0) { alert("서평 사이트를 선택해 주세요."); return; }
+
+      targets.forEach(t => {
+        if (t === "goodreads") window.open(`https://www.goodreads.com/search?q=${encoded}`, "_blank");
+      });
+    }
+
+    function searchForeignMedia() {
+      const keyword = getForeignKeyword();
+      if (!keyword) return;
+
+      const encoded = encodeURIComponent(keyword);
+      const medias = Array.from(document.querySelectorAll(".foreign-media:checked")).map(cb => cb.value);
+      if (medias.length === 0) { alert("미디어를 선택해 주세요."); return; }
+
+      medias.forEach(m => {
+        let url = "";
+        if (m === "blog") url = `https://www.google.com/search?q=${encoded}+review+blog`;
+        else if (m === "news") url = `https://www.google.com/search?tbm=nws&q=${encoded}`;
+        else if (m === "youtube") url = `https://www.youtube.com/results?search_query=${encoded}`;
+        else if (m === "instagram") url = `https://www.google.com/search?q=${encoded}+site:instagram.com`;
+        else if (m === "facebook") url = `https://www.google.com/search?q=${encoded}+site:facebook.com`;
+        if (url) window.open(url, "_blank");
+      });
+    }
+
+    function searchReddit() {
+      const keyword = getRedditKeyword();
+      if (!keyword) return;
+
+      const subs = Array.from(document.querySelectorAll(".reddit:checked")).map(cb => cb.value);
+      if (subs.length === 0) { alert("레딧 범위를 선택해 주세요."); return; }
+
+      subs.forEach(sub => {
+        const query = (sub === "all")
+          ? `${keyword} site:reddit.com`
+          : `${keyword} site:reddit.com/r/${sub}`;
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, "_blank");
+      });
+    }
+
+    // =========================================================
+    // 커뮤니티 배치 저장/드래그
+    // =========================================================
+    const LAYOUT_KEY = "community_layout_v2";
+
+    function saveCommunityLayout() {
+      const data = {};
+      document.querySelectorAll(".community-node[data-key]").forEach(node => {
+        const key = node.getAttribute("data-key");
+        const x = node.style.getPropertyValue("--x").trim();
+        const y = node.style.getPropertyValue("--y").trim();
+        if (key && x && y) data[key] = { x, y };
+      });
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(data));
+    }
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function setupCommunityDrag() {
+      const map = document.getElementById("communityMap");
+      if (!map) return;
+
+      let draggingNode = null;
+      let pointerId = null;
+
+      function onPointerDown(e) {
+        if (!isEditMode) return;
+        const node = e.target.closest(".community-node");
+        if (!node) return;
+        if (e.target && e.target.tagName === "INPUT") return;
+
+        draggingNode = node;
+        pointerId = e.pointerId;
+        draggingNode.classList.add("dragging");
+        draggingNode.setPointerCapture(pointerId);
+        e.preventDefault();
+      }
+
+      function onPointerMove(e) {
+        if (!draggingNode) return;
+        if (pointerId !== null && e.pointerId !== pointerId) return;
+
+        const rect = map.getBoundingClientRect();
+        const px = ((e.clientX - rect.left) / rect.width) * 100;
+        const py = ((e.clientY - rect.top) / rect.height) * 100;
+
+        const x = clamp(px, 2, 98).toFixed(2) + "%";
+        const y = clamp(py, 4, 96).toFixed(2) + "%";
+
+        draggingNode.style.setProperty("--x", x);
+        draggingNode.style.setProperty("--y", y);
+      }
+
+      function onPointerUp(e) {
+        if (!draggingNode) return;
+        if (pointerId !== null && e.pointerId !== pointerId) return;
+
+        draggingNode.classList.remove("dragging");
+        try { draggingNode.releasePointerCapture(pointerId); } catch (_) {}
+
+        draggingNode = null;
+        pointerId = null;
+
+        saveCommunityLayout();
+      }
+
+      map.addEventListener("pointerdown", onPointerDown);
+      map.addEventListener("pointermove", onPointerMove);
+      map.addEventListener("pointerup", onPointerUp);
+      map.addEventListener("pointercancel", onPointerUp);
+      map.addEventListener("lostpointercapture", onPointerUp);
+    }
+
+    // 초기 실행
+    applyCommunityDensity();
+    setupCommunityDrag();
+
+    // 시작 시 커뮤니티는 모두 체크 해제 + 토글 상태 반영
+    document.querySelectorAll("input.community").forEach(cb => cb.checked = false);
+    setToggleButtonState(
+      "toggleCommunityCheckBtn",
+      "toggleCommunityCheckText",
+      false,
+      "커뮤니티 전체: 체크",
+      "커뮤니티 전체: 해제"
+    );
+
+    // 미디어 토글 초기 텍스트(현재는 모두 체크 상태)
+    setToggleButtonState(
+      "toggleMediaBtn",
+      "toggleMediaText",
+      true,
+      "미디어 전체: 체크",
+      "미디어 전체: 해제"
+    );
+  </script>
 </body>
 </html>
